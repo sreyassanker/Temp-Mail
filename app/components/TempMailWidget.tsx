@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useRef, useState } from "react";
 import type { MailMessage } from "@/app/lib/mailtm";
+import { setStoredValue, useStoredValue } from "@/app/lib/use-stored-value";
 
 const STORAGE_KEY = "tempmail-address";
 const REFRESH_MS = 30000;
@@ -36,14 +37,7 @@ function stripHtml(html: string): string {
 }
 
 export default function TempMailWidget() {
-  const [address, setAddress] = useState<string | null>(() => {
-    if (typeof window === "undefined") return null;
-    try {
-      return localStorage.getItem(STORAGE_KEY);
-    } catch {
-      return null;
-    }
-  });
+  const address = useStoredValue(STORAGE_KEY);
   const [messages, setMessages] = useState<MailMessage[]>([]);
   const [selected, setSelected] = useState<MailMessage | null>(null);
   const [loading, setLoading] = useState(false);
@@ -83,8 +77,7 @@ export default function TempMailWidget() {
       const res = await fetch("/api/mailbox", { method: "POST" });
       const data = await res.json();
       if (!res.ok) throw new Error(data?.error ?? "Failed to create mailbox");
-      localStorage.setItem(STORAGE_KEY, data.address);
-      setAddress(data.address);
+      setStoredValue(STORAGE_KEY, data.address);
       setSelected(null);
       await fetchMessages(data.address);
     } catch (err) {

@@ -1,4 +1,5 @@
 import TempMailWidget from "@/app/components/TempMailWidget";
+import TempGmailWidget from "@/app/components/TempGmailWidget";
 
 const features = [
   {
@@ -128,6 +129,7 @@ export default function Home() {
           </a>
           <div className="hidden items-center gap-8 text-sm font-medium text-zinc-600 md:flex dark:text-zinc-300">
             <a href="#features" className="transition hover:text-zinc-900 dark:hover:text-white">Features</a>
+            <a href="#gmail-aliases" className="transition hover:text-zinc-900 dark:hover:text-white">Gmail Aliases</a>
             <a href="#how-it-works" className="transition hover:text-zinc-900 dark:hover:text-white">How it works</a>
             <a href="#faq" className="transition hover:text-zinc-900 dark:hover:text-white">FAQ</a>
             <a
@@ -195,6 +197,29 @@ export default function Home() {
           </div>
         </div>
       </header>
+
+      {/* Gmail Alias Generator */}
+      <section id="gmail-aliases" className="scroll-mt-20 border-t border-zinc-200 bg-zinc-50 py-20 dark:border-zinc-800 dark:bg-zinc-900/50">
+        <div className="mx-auto w-full max-w-6xl px-6">
+          <div className="mx-auto max-w-2xl text-center">
+            <span className="inline-flex items-center gap-2 rounded-full border border-emerald-200 bg-emerald-50 px-3 py-1 text-xs font-semibold text-emerald-700 dark:border-emerald-900 dark:bg-emerald-950/60 dark:text-emerald-300">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <path d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" strokeLinecap="round" strokeLinejoin="round" />
+              </svg>
+              New: Gmail Alias Generator
+            </span>
+            <h2 className="mt-6 text-3xl font-bold tracking-tight text-zinc-900 sm:text-4xl dark:text-white">
+              Unlimited Gmail aliases, instantly
+            </h2>
+            <p className="mt-4 text-lg leading-8 text-zinc-600 dark:text-zinc-400">
+              Generate hundreds of unique Gmail addresses from your single account using dot tricks, plus aliases, and Googlemail swaps. All mail lands in your real inbox.
+            </p>
+          </div>
+          <div className="mt-14 flex justify-center">
+            <TempGmailWidget />
+          </div>
+        </div>
+      </section>
 
       {/* Features */}
       <section id="features" className="scroll-mt-20 border-t border-zinc-200 bg-white py-20 dark:border-zinc-800 dark:bg-zinc-950">
