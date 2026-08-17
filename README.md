@@ -1,6 +1,6 @@
 # TempMail — Free Temporary Email Address
 
-A fast, free, and private **disposable email** web app built with [Next.js 16](https://nextjs.org) (App Router) and Tailwind CSS. Generate a throwaway email address in one click, receive messages, and read them right in your browser — no registration, ever.
+A fast, free, and private **disposable email** web app built with [Next.js 16](https://nextjs.org) (App Router) and Tailwind CSS. Generate a throwaway email address in one click, receive messages, and read them right in your browser — no registration, ever. It also ships with a [Gmail Alias Generator](#-gmail-alias-generator) that creates hundreds of unique Gmail addresses from a single account.
 
 ![Next.js](https://img.shields.io/badge/Next.js-16-black?logo=next.js&logoColor=white)
 ![React](https://img.shields.io/badge/React-19-blue)
@@ -17,6 +17,7 @@ A fast, free, and private **disposable email** web app built with [Next.js 16](h
 - **Read messages in-browser** — sender, subject, and full body in a clean reading view.
 - **One-click copy** — grab your address and paste it into any signup form.
 - **Privacy first** — inbox state is stored only in your browser; nothing is tracked.
+- **Gmail alias generator** — generate unlimited aliases from your Gmail with dot tricks, plus tags, and Googlemail swaps.
 - **Dark / light mode** — follows your system preference.
 - **Fully responsive** — works beautifully on desktop and mobile.
 
@@ -30,6 +31,7 @@ A fast, free, and private **disposable email** web app built with [Next.js 16](h
 | Language     | TypeScript                                              |
 | Styling      | Tailwind CSS v4                                         |
 | Email API    | [mail.tm](https://mail.tm) (disposable inbox backend)    |
+| Alias engine | Gmail dot / plus / Googlemail tricks (client-side)      |
 | Node runtime | Node.js 20.9+                                           |
 
 ---
@@ -69,6 +71,18 @@ npm start
 3. **Read** — incoming mail shows up in the live inbox; click any message to open it.
 4. **Repeat** — generate a brand-new address whenever you want a clean slate.
 
+### ✨ Gmail Alias Generator
+
+Enter your Gmail address and get hundreds of unique addresses that still deliver to your real inbox — useful for taming spam, analytics, and signup filters without creating new accounts:
+
+| Trick | Example | Why it works |
+| ----- | ------- | ------------ |
+| **Dot trick** | `j.ohndoe@gmail.com` = `johndoe@gmail.com` | Gmail ignores dots in the username |
+| **Plus tag** | `johndoe+signup@gmail.com` | `+tag` routes to the base mailbox |
+| **Googlemail swap** | `johndoe@googlemail.com` | `@googlemail.com` and `@gmail.com` are the same |
+
+For a canonical username of length `n`, the generator can produce `2^(n-1)` dot variations (capped at 64 for performance), plus unlimited tag aliases and the Googlemail variant.
+
 ### API routes
 
 | Method | Route             | Description                                    |
@@ -85,9 +99,11 @@ npm start
 app/
 ├── api/mailbox/route.ts      # API route handlers (create, list, read)
 ├── components/
-│   └── TempMailWidget.tsx    # Client widget: inbox, copy, auto-refresh, reader
+│   ├── TempMailWidget.tsx    # Client widget: inbox, copy, auto-refresh, reader
+│   └── TempGmailWidget.tsx   # Gmail alias generator widget
 ├── lib/
-│   └── mailtm.ts             # mail.tm API client + helpers
+│   ├── mailtm.ts             # mail.tm API client + helpers
+│   └── gmail-alias.ts        # Gmail dot / plus / Googlemail alias engine
 ├── globals.css               # Tailwind theme & design tokens
 ├── layout.tsx                # Root layout & metadata
 └── page.tsx                  # Landing page
