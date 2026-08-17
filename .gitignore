@@ -30,6 +30,14 @@ yarn-debug.log*
 yarn-error.log*
 .pnpm-debug.log*
 
+# local server artifacts
+server-out.log
+server-err.log
+server.pid
+
+# local tooling config (may contain secrets)
+opencode.json
+
 # env files (can opt-in for committing if needed)
 .env*
 
