@@ -8,6 +8,7 @@ A fast, free, and private **disposable email** web app built with [Next.js 16](h
 ![Tailwind CSS](https://img.shields.io/badge/Tailwind-4-38bdf8)
 
 ---
+**🔗 Live demo:** [https://temp-mail-app-sooty.vercel.app](https://temp-mail-app-sooty.vercel.app)
 
 ## ✨ Features
 
