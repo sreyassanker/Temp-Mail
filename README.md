@@ -46,10 +46,14 @@ A fast, free, and private **disposable email** web app built with [Next.js 16](h
 ### Install & run locally
 
 ```bash
-# 1. Install dependencies
+# 1. Clone the repository
+git clone https://github.com/sreyassanker/Temp-Mail.git
+cd Temp-Mail
+
+# 2. Install dependencies
 npm install
 
-# 2. Start the development server
+# 3. Start the development server
 npm run dev
 ```
 
@@ -124,6 +128,6 @@ app/
 
 ## 📄 License
 
-MIT — free to use, modify, and share.
+MIT — free to use, modify, and share. See the [LICENSE](./LICENSE) file for details.
 
 > TempMail is for legitimate privacy protection (avoiding spam, protecting your personal inbox). Please use responsibly.
