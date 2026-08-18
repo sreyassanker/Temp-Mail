@@ -1,28 +1,11 @@
 import { type NextRequest } from "next/server";
-import {
-  createAccount,
-  getActiveDomains,
-  getMessage,
-  listMessages,
-  randomLogin,
-} from "@/app/lib/mailtm";
+import { createMailbox, getMessage, listMessages } from "@/app/lib/mailbox";
 
 export const dynamic = "force-dynamic";
 
-const RANDOM_PREFIX = "temp";
-
 export async function POST() {
   try {
-    const domains = await getActiveDomains();
-    if (domains.length === 0) {
-      return Response.json({ error: "No active mail domains available" }, { status: 503 });
-    }
-
-    const domain = domains[Math.floor(Math.random() * domains.length)];
-    const login = randomLogin(10);
-    const address = `${RANDOM_PREFIX}${login}@${domain}`;
-
-    await createAccount(address);
+    const { address } = await createMailbox();
     return Response.json({ address });
   } catch (err) {
     return Response.json(
