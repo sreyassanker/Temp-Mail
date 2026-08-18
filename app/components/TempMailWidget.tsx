@@ -47,6 +47,37 @@ function cleanMessageText(msg: MailMessage): string {
   return /<[a-z][\s\S]*>/i.test(raw) ? stripHtml(raw) : raw;
 }
 
+function extractVerificationCode(text: string): string | null {
+  const keywordMatch = text.match(
+    /(?:verification code|one-?time (?:password|passcode|otp|code)|otp|activation code|confirmation code|security code)[^0-9]{0,40}?\b(\d{4,8})\b/i
+  );
+  if (keywordMatch) return keywordMatch[1];
+  const plainMatch = text.match(/\b(\d{4,8})\b/);
+  return plainMatch ? plainMatch[1] : null;
+}
+
+async function copyText(text: string): Promise<boolean> {
+  try {
+    await navigator.clipboard.writeText(text);
+    return true;
+  } catch {
+    return false;
+  }
+}
+
+function Countdown() {
+  const [seconds, setSeconds] = useState(REFRESH_MS / 1000);
+
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setSeconds((prev) => (prev <= 1 ? REFRESH_MS / 1000 : prev - 1));
+    }, 1000);
+    return () => clearInterval(timer);
+  }, []);
+
+  return <span className="font-mono tabular-nums">({seconds}s)</span>;
+}
+
 export default function TempMailWidget() {
   const address = useStoredValue(STORAGE_KEY);
   const [messages, setMessages] = useState<MailMessage[]>([]);
@@ -56,10 +87,10 @@ export default function TempMailWidget() {
   const [error, setError] = useState<string | null>(null);
   const [copied, setCopied] = useState(false);
   const [autoRefresh, setAutoRefresh] = useState(true);
-  const [countdown, setCountdown] = useState(REFRESH_MS / 1000);
+  const [refreshVersion, setRefreshVersion] = useState(0);
+  const [codeCopied, setCodeCopied] = useState(false);
 
   const refreshTimer = useRef<ReturnType<typeof setInterval> | null>(null);
-  const countdownTimer = useRef<ReturnType<typeof setInterval> | null>(null);
 
   const fetchMessages = useCallback(async (addr: string) => {
     try {
@@ -73,7 +104,7 @@ export default function TempMailWidget() {
       }
       const list: MailMessage[] = await res.json();
       setMessages(list);
-      setCountdown(REFRESH_MS / 1000);
+      setRefreshVersion((v) => v + 1);
       return list;
     } catch (err) {
       setError(err instanceof Error ? err.message : "Failed to fetch inbox");
@@ -150,14 +181,10 @@ export default function TempMailWidget() {
       refreshTimer.current = setInterval(() => {
         void fetchMessages(address);
       }, REFRESH_MS);
-      countdownTimer.current = setInterval(() => {
-        setCountdown((prev) => (prev <= 1 ? REFRESH_MS / 1000 : prev - 1));
-      }, 1000);
     }
 
     return () => {
       if (refreshTimer.current) clearInterval(refreshTimer.current);
-      if (countdownTimer.current) clearInterval(countdownTimer.current);
     };
   }, [address, autoRefresh, fetchMessages]);
 
@@ -316,7 +343,7 @@ export default function TempMailWidget() {
                     className="h-3.5 w-3.5 rounded accent-indigo-600"
                   />
                   Auto
-                  <span className="font-mono tabular-nums">({countdown}s)</span>
+                  <Countdown key={refreshVersion} />
                 </label>
               </div>
               <span className="text-xs font-medium text-zinc-500 dark:text-zinc-400">
@@ -378,9 +405,9 @@ export default function TempMailWidget() {
       </div>
 
       {selected && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4 backdrop-blur-sm">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
           <div className="flex max-h-[85vh] w-full max-w-xl flex-col overflow-hidden rounded-3xl border border-zinc-200 bg-white shadow-2xl dark:border-zinc-800 dark:bg-zinc-900">
-            <div className="flex items-center justify-between border-b border-zinc-200 px-5 py-4 dark:border-zinc-800">
+            <div className="flex shrink-0 items-center justify-between border-b border-zinc-200 bg-white px-5 py-4 dark:border-zinc-800 dark:bg-zinc-900">
               <button
                 onClick={() => setSelected(null)}
                 className="inline-flex items-center gap-1.5 text-sm font-medium text-zinc-600 transition hover:text-zinc-900 dark:text-zinc-300 dark:hover:text-white"
@@ -400,27 +427,51 @@ export default function TempMailWidget() {
                 </svg>
               </button>
             </div>
-            <div className="flex-1 overflow-y-auto px-5 py-5">
-              <h3 className="text-lg font-semibold text-zinc-900 dark:text-zinc-100">
-                {selected.subject || "(no subject)"}
-              </h3>
-              <div className="mt-3 flex items-center gap-3 border-b border-zinc-100 pb-4 dark:border-zinc-800">
-                <div className="flex h-10 w-10 items-center justify-center rounded-full bg-indigo-100 text-sm font-bold text-indigo-600 dark:bg-indigo-900/50 dark:text-indigo-300">
-                  {(selected.from.name || selected.from.address).charAt(0).toUpperCase()}
+<div className="flex-1 overflow-y-auto px-5 py-5">
+                <h3 className="text-lg font-semibold text-zinc-900 dark:text-zinc-100">
+                  {selected.subject || "(no subject)"}
+                </h3>
+                <div className="mt-3 flex items-center gap-3 border-b border-zinc-100 pb-4 dark:border-zinc-800">
+                  <div className="flex h-10 w-10 items-center justify-center rounded-full bg-indigo-100 text-sm font-bold text-indigo-600 dark:bg-indigo-900/50 dark:text-indigo-300">
+                    {(selected.from.name || selected.from.address).charAt(0).toUpperCase()}
+                  </div>
+                  <div className="min-w-0">
+                    <p className="truncate text-sm font-semibold text-zinc-900 dark:text-zinc-100">
+                      {selected.from.name || selected.from.address}
+                    </p>
+                    <p className="truncate text-xs text-zinc-500 dark:text-zinc-400">
+                      {selected.from.address} · {formatDate(selected.createdAt)}
+                    </p>
+                  </div>
                 </div>
-                <div className="min-w-0">
-                  <p className="truncate text-sm font-semibold text-zinc-900 dark:text-zinc-100">
-                    {selected.from.name || selected.from.address}
-                  </p>
-                  <p className="truncate text-xs text-zinc-500 dark:text-zinc-400">
-                    {selected.from.address} · {formatDate(selected.createdAt)}
-                  </p>
+                {extractVerificationCode(cleanMessageText(selected)) && (
+                  <button
+                    onClick={async () => {
+                      const ok = await copyText(
+                        extractVerificationCode(cleanMessageText(selected)) as string
+                      );
+                      if (ok) {
+                        setCodeCopied(true);
+                        setTimeout(() => setCodeCopied(false), 2000);
+                      } else {
+                        setError("Clipboard unavailable in this browser");
+                      }
+                    }}
+                    className="mt-4 flex w-full items-center justify-between gap-3 rounded-xl border border-indigo-200 bg-indigo-50 px-4 py-3 text-left transition hover:border-indigo-300 dark:border-indigo-900 dark:bg-indigo-950/40 dark:hover:border-indigo-700"
+                    title="Tap to copy"
+                  >
+                    <span className="text-xs font-semibold uppercase tracking-wide text-zinc-500 dark:text-zinc-400">
+                      {codeCopied ? "Copied!" : "Verification code — tap to copy"}
+                    </span>
+                    <span className="font-mono text-2xl font-bold tracking-widest text-indigo-600 dark:text-indigo-300">
+                      {extractVerificationCode(cleanMessageText(selected))}
+                    </span>
+                  </button>
+                )}
+                <div className="mt-4 whitespace-pre-wrap text-sm leading-6 text-zinc-700 dark:text-zinc-300">
+                  {cleanMessageText(selected)}
                 </div>
               </div>
-              <div className="mt-4 whitespace-pre-wrap text-sm leading-6 text-zinc-700 dark:text-zinc-300">
-                {cleanMessageText(selected)}
-              </div>
-            </div>
           </div>
         </div>
       )}
