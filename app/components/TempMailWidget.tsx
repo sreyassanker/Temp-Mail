@@ -36,6 +36,17 @@ function stripHtml(html: string): string {
     .trim();
 }
 
+function cleanMessageText(msg: MailMessage): string {
+  const raw =
+    msg.text && msg.text.trim().length > 0
+      ? msg.text
+      : msg.html && msg.html.length > 0
+        ? msg.html.join("")
+        : "";
+  if (!raw.trim()) return "This message contains no readable text content.";
+  return /<[a-z][\s\S]*>/i.test(raw) ? stripHtml(raw) : raw;
+}
+
 export default function TempMailWidget() {
   const address = useStoredValue(STORAGE_KEY);
   const [messages, setMessages] = useState<MailMessage[]>([]);
@@ -208,13 +219,13 @@ export default function TempMailWidget() {
             <button
               onClick={() => void createMailbox()}
               disabled={creating}
-              className="inline-flex items-center gap-2 rounded-xl bg-indigo-600 px-6 py-3 text-sm font-semibold text-white shadow-lg shadow-indigo-600/30 transition hover:bg-indigo-500 disabled:cursor-not-allowed disabled:opacity-60"
+              className="inline-flex min-w-56 items-center justify-center gap-2 rounded-xl bg-indigo-600 px-6 py-3 text-sm font-semibold text-white shadow-lg shadow-indigo-600/30 transition hover:bg-indigo-500 disabled:cursor-not-allowed disabled:opacity-60"
             >
               {creating ? (
                 <>
                   <svg className="h-4 w-4 animate-spin" viewBox="0 0 24 24" fill="none">
-                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z" />
+                    <circle className="opacity-25" cx="12" cy="12" r="9" stroke="currentColor" strokeWidth="3" />
+                    <path className="opacity-75" fill="currentColor" d="M3 12a9 9 0 0 1 9-9v4a5 5 0 0 0-5 5H3z" />
                   </svg>
                   Creating…
                 </>
@@ -407,11 +418,7 @@ export default function TempMailWidget() {
                 </div>
               </div>
               <div className="mt-4 whitespace-pre-wrap text-sm leading-6 text-zinc-700 dark:text-zinc-300">
-                {selected.text && selected.text.length > 0
-                  ? selected.text
-                  : selected.html && selected.html.length > 0
-                    ? stripHtml(selected.html.join(""))
-                    : "This message contains no readable text content."}
+                {cleanMessageText(selected)}
               </div>
             </div>
           </div>
