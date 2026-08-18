@@ -7,6 +7,10 @@ A fast, free, and private **disposable email** web app built with [Next.js 16](h
 ![TypeScript](https://img.shields.io/badge/TypeScript-5-blue)
 ![Tailwind CSS](https://img.shields.io/badge/Tailwind-4-38bdf8)
 
+<p align="center">
+  <img src="docs/screenshot.png" alt="TempMail app screenshot" width="720" />
+</p>
+
 ---
 **🔗 Live demo:** [https://temp-mail-app-sooty.vercel.app](https://temp-mail-app-sooty.vercel.app)
 
