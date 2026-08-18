@@ -17,6 +17,8 @@ A fast, free, and private **disposable email** web app built with [Next.js 16](h
 - **Auto-refreshing inbox** — polls every 30 seconds, new mail appears automatically.
 - **Read messages in-browser** — sender, subject, and full body in a clean reading view.
 - **One-click copy** — grab your address and paste it into any signup form.
+- **Tap-to-copy verification codes** — OTP codes are auto-detected and copied with one tap.
+- **Provider fallback** — if mail.tm is unavailable (e.g. a blocked cloud IP), new addresses are created automatically via GuerrillaMail, so the app keeps working.
 - **Privacy first** — inbox state is stored only in your browser; nothing is tracked.
 - **Gmail alias generator** — generate unlimited aliases from your Gmail with dot tricks, plus tags, and Googlemail swaps.
 - **Dark / light mode** — follows your system preference.
@@ -31,7 +33,7 @@ A fast, free, and private **disposable email** web app built with [Next.js 16](h
 | Framework    | [Next.js 16](https://nextjs.org) (App Router, Turbopack) |
 | Language     | TypeScript                                              |
 | Styling      | Tailwind CSS v4                                         |
-| Email API    | [mail.tm](https://mail.tm) (disposable inbox backend)    |
+| Email API    | [mail.tm](https://mail.tm) with [GuerrillaMail](https://www.guerrillamail.com) fallback |
 | Alias engine | Gmail dot / plus / Googlemail tricks (client-side)      |
 | Node runtime | Node.js 20.9+                                           |
 
@@ -71,10 +73,12 @@ npm start
 
 ## 🔍 How It Works
 
-1. **Generate** — the app fetches an active domain from the mail.tm API and creates a fresh inbox.
+1. **Generate** — the app fetches an active domain from the mail.tm API and creates a fresh inbox; if mail.tm fails, it automatically falls back to a GuerrillaMail address instead.
 2. **Use** — copy the address and use it anywhere that requires an email.
 3. **Read** — incoming mail shows up in the live inbox; click any message to open it.
 4. **Repeat** — generate a brand-new address whenever you want a clean slate.
+
+> **Provider routing:** message listing and reading are routed by address domain — `@guerrillamail…` addresses use GuerrillaMail, everything else uses mail.tm. Both providers' message shapes are normalized to a single type, so the UI never changes.
 
 ### ✨ Gmail Alias Generator
 
@@ -107,7 +111,9 @@ app/
 │   ├── TempMailWidget.tsx    # Client widget: inbox, copy, auto-refresh, reader
 │   └── TempGmailWidget.tsx   # Gmail alias generator widget
 ├── lib/
+│   ├── mailbox.ts            # Provider dispatcher (mail.tm → GuerrillaMail fallback)
 │   ├── mailtm.ts             # mail.tm API client + helpers
+│   ├── guerrillamail.ts      # GuerrillaMail API client (fallback provider)
 │   └── gmail-alias.ts        # Gmail dot / plus / Googlemail alias engine
 ├── globals.css               # Tailwind theme & design tokens
 ├── layout.tsx                # Root layout & metadata
